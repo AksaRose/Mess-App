@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "178582659060",
+    "firebase_url": "https://mess-app-c35f7-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "mess-app-c35f7",
+    "storage_bucket": "mess-app-c35f7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178582659060:android:1db9256ecf076d10c7e3a1",
+        "android_client_info": {
+          "package_name": "com.example.mess_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu6E8Vhe9U65YEadAyurUG78I2vsMHDj4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
