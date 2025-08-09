@@ -67,40 +67,73 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-              validator: (v) => v == null || !v.contains('@') ? 'Enter a valid email' : null,
+      appBar: AppBar(
+        title: const Text('Welcome Back'),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Login to your account',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 40),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.alternate_email),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) =>
+                      v == null || !v.contains('@') ? 'Enter a valid email' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: Icon(Icons.vpn_key_outlined),
+                  ),
+                  obscureText: true,
+                  validator: (v) =>
+                      v == null || v.length < 6 ? 'Password must be at least 6 characters' : null,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _loading ? null : _submit,
+                  child: _loading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : const Text('Login'),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () =>
+                      Navigator.pushReplacementNamed(context, SignupScreen.route),
+                  child: Text(
+                    'Don\'t have an account? Sign Up',
+                    style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-              validator: (v) =>
-                  v == null || v.length < 4 ? 'Min 4 chars' : null,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _loading ? null : _submit,
-              child: _loading
-                  ? const CircularProgressIndicator()
-                  : const Text('Login'),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () =>
-                  Navigator.pushReplacementNamed(context, SignupScreen.route),
-              child: const Text('Create an account'),
-            ),
-          ],
+          ),
         ),
       ),
     );

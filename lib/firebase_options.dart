@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:mess_app/env.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -46,33 +47,33 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDY4FFztv3OHHy7mo76ag8cAFKfKj18g7Q',
-    appId: '1:178582659060:web:f09349d335be1b6dc7e3a1',
-    messagingSenderId: '178582659060',
-    projectId: 'mess-app-c35f7',
-    authDomain: 'mess-app-c35f7.firebaseapp.com',
-    databaseURL: 'https://mess-app-c35f7-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'mess-app-c35f7.firebasestorage.app',
-    measurementId: 'G-1H7FWTF3H9',
-  );
+  static FirebaseOptions get web => FirebaseOptions(
+        apiKey: Env.webApiKey,
+        appId: Env.webAppId,
+        messagingSenderId: Env.webMessagingSenderId,
+        projectId: Env.webProjectId,
+        authDomain: Env.webAuthDomain,
+        databaseURL: Env.webDatabaseUrl,
+        storageBucket: Env.webStorageBucket,
+        measurementId: Env.webMeasurementId,
+      );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBu6E8Vhe9U65YEadAyurUG78I2vsMHDj4',
-    appId: '1:178582659060:android:1db9256ecf076d10c7e3a1',
-    messagingSenderId: '178582659060',
-    projectId: 'mess-app-c35f7',
-    databaseURL: 'https://mess-app-c35f7-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'mess-app-c35f7.firebasestorage.app',
-  );
+  static FirebaseOptions get android => FirebaseOptions(
+        apiKey: Env.androidApiKey,
+        appId: Env.androidAppId,
+        messagingSenderId: Env.androidMessagingSenderId,
+        projectId: Env.androidProjectId,
+        databaseURL: Env.androidDatabaseUrl,
+        storageBucket: Env.androidStorageBucket,
+      );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCb4ZFV818DwUrQQyOIrwPqE_43BPQdkvQ',
-    appId: '1:178582659060:ios:61ecf9912ac61a26c7e3a1',
-    messagingSenderId: '178582659060',
-    projectId: 'mess-app-c35f7',
-    databaseURL: 'https://mess-app-c35f7-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'mess-app-c35f7.firebasestorage.app',
-    iosBundleId: 'com.example.messApp',
-  );
+  static FirebaseOptions get ios => FirebaseOptions(
+        apiKey: Env.iosApiKey,
+        appId: Env.iosAppId,
+        messagingSenderId: Env.iosMessagingSenderId,
+        projectId: Env.iosProjectId,
+        databaseURL: Env.iosDatabaseUrl,
+        storageBucket: Env.iosStorageBucket,
+        iosBundleId: Env.iosBundleId,
+      );
 }

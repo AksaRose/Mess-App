@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/admin_service.dart';
 import '../../services/menu_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'menu_editor_screen.dart';
 
 class AdminStatsScreen extends StatefulWidget {
   static const String route = '/admin/stats';
@@ -36,8 +37,16 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tomorrow\'s Counts'),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _reload),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              // For now, just navigating to login
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+          ),
         ],
       ),
       body: Center(
@@ -60,17 +69,8 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.edit),
-                  onPressed: () async {
-                    // Navigate to a simple weekly menu editor (to be added)
-                    // For now, show a hint how to structure Firestore documents
-                    await showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text('Menu Editing'),
-                        content: const Text('Create collection "weeklyMenu" with docs week_1..week_7 (Mon..Sun) and fields for each timeslot.'),
-                        actions: [TextButton(onPressed: ()=>Navigator.pop(context), child: const Text('OK'))],
-                      ),
-                    );
+                  onPressed: () {
+                    Navigator.pushNamed(context, MenuEditorScreen.route);
                   },
                   label: const Text('Edit Weekly Menu'),
                 ),

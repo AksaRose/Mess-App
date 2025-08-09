@@ -1,3 +1,5 @@
+import 'config.dart';
+
 class MenuItem {
   final String timeSlot; // 'Breakfast', 'Lunch', 'Snacks', 'Dinner'
   final String veg;
@@ -15,8 +17,13 @@ class DailyMenu {
   const DailyMenu({required this.date, required this.items});
 }
 
-class MenuService {
+abstract class MenuService {
+  DailyMenu getMenuFor(DateTime date);
+}
+
+class LocalMenuService extends MenuService {
   // In production, read from Firestore weekly menu; fallback to generated.
+  @override
   DailyMenu getMenuFor(DateTime date) {
     final seed = date.day % 7;
     final items = <MenuItem>[
@@ -41,6 +48,16 @@ class MenuService {
       date: DateTime(date.year, date.month, date.day),
       items: items,
     );
+  }
+}
+
+class MenuServiceFactory {
+  static MenuService create() {
+    if (AppConfig.isFirebaseEnabled) {
+      // For now, return local service until we fix the import
+      return LocalMenuService();
+    }
+    return LocalMenuService();
   }
 }
 

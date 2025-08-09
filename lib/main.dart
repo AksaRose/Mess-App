@@ -10,10 +10,14 @@ import 'screens/auth/signup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/admin/login_admin_screen.dart';
 import 'screens/admin/stats_screen.dart';
+import 'screens/admin/menu_editor_screen.dart';
 import 'firebase_options.dart';
 import 'services/config.dart';
+import 'package:mess_app/env.dart';
+import 'theme/dark_theme.dart';
 
 void main() async {
+  await Env.load();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
@@ -29,10 +33,7 @@ class MyApp extends StatelessWidget {
       providers: [ChangeNotifierProvider(create: (_) => SelectionProvider())],
       child: MaterialApp(
         title: 'Mess App',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-          useMaterial3: true,
-        ),
+        theme: darkTheme,
         routes: {
           HomeScreen.route: (_) => const HomeScreen(),
           SelectionScreen.route: (_) => const SelectionScreen(),
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
           SignupScreen.route: (_) => const SignupScreen(),
           AdminLoginScreen.route: (_) => const AdminLoginScreen(),
           AdminStatsScreen.route: (_) => const AdminStatsScreen(),
+          MenuEditorScreen.route: (_) => const MenuEditorScreen(),
         },
         initialRoute: LoginScreen.route,
       ),
