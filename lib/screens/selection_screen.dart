@@ -1,12 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:confetti/confetti.dart'; // Import confetti package
 
 import '../providers/selection_provider.dart';
 import 'confirmation_screen.dart';
 
-class SelectionScreen extends StatelessWidget {
+class SelectionScreen extends StatefulWidget {
   static const String route = '/';
   const SelectionScreen({super.key});
+
+  @override
+  State<SelectionScreen> createState() => _SelectionScreenState();
+}
+
+class _SelectionScreenState extends State<SelectionScreen> {
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 3));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,22 +38,38 @@ class SelectionScreen extends StatelessWidget {
         title: const Text('Choose Your Meal'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildDateSelector(context, selectionProvider),
-            const SizedBox(height: 24),
-            _buildMenuCard(context, selectionProvider),
-            const SizedBox(height: 24),
-            _buildMealChoiceToggle(context, selectionProvider),
-            const SizedBox(height: 32),
-            _buildSubmitButton(context, selectionProvider),
-            const SizedBox(height: 16),
-            _buildInfoSection(context, selectionProvider),
-          ],
-        ),
+      body: Stack(
+        // Use Stack to overlay ConfettiWidget
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildDateSelector(context, selectionProvider),
+                const SizedBox(height: 24),
+                _buildMenuCard(context, selectionProvider),
+                const SizedBox(height: 24),
+                _buildSubmitButton(context, selectionProvider),
+                const SizedBox(height: 16),
+                _buildInfoSection(context, selectionProvider),
+              ],
+            ),
+          ),
+          ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirectionality: BlastDirectionality.explosive, // don't specify a direction, blast randomly
+            shouldLoop: false, // don't loop the animation
+            colors: const [
+              Colors.green,
+              Colors.blue,
+              Colors.pink,
+              Colors.orange,
+              Colors.purple
+            ], // manually specify the colors to be used
+            createParticlePath: (size) => Path(), // create a custom path for the particles
+          ),
+        ],
       ),
     );
   }
@@ -117,63 +154,103 @@ class SelectionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMealChoiceToggle(
+  Widget _buildSubmitButton(
       BuildContext context, SelectionProvider selectionProvider) {
-    return ToggleButtons(
-      isSelected: [
-        selectionProvider.currentChoice == MealChoice.veg,
-        selectionProvider.currentChoice == MealChoice.nonVeg,
-      ],
-      onPressed: (index) {
-        if (selectionProvider.isSubmissionOpen) {
-          selectionProvider.selectChoice(
-              index == 0 ? MealChoice.veg : MealChoice.nonVeg);
-        }
+    return ElevatedButton(
+      onPressed: () {
+        _showSubmissionWindow(context, selectionProvider);
       },
-      borderRadius: BorderRadius.circular(12),
-      selectedColor: Colors.black,
-      fillColor: Theme.of(context).colorScheme.secondary,
-      color: Colors.white,
-      children: const [
-        Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            child: Text('Veg')),
-        Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            child: Text('Non-Veg')),
-      ],
+      child: const Text('Submit Your Choice'),
     );
   }
 
-  Widget _buildSubmitButton(
+  void _showSubmissionWindow(
       BuildContext context, SelectionProvider selectionProvider) {
-    return FutureBuilder<bool>(
-      future: selectionProvider.isChangeLimitReachedForSelectedDate(),
-      builder: (context, snapshot) {
-        final limitReached = snapshot.data == true;
-        final isEnabled = selectionProvider.currentChoice != null &&
-            selectionProvider.isSubmissionOpen &&
-            !limitReached;
-
-        return ElevatedButton.icon(
-          icon: const Icon(Icons.playlist_add_check_circle_outlined),
-          onPressed: !isEnabled
-              ? null
-              : () async {
-                  try {
-                    await selectionProvider.submitChoice();
-                    if (!context.mounted) return;
-                    Navigator.pushNamed(context, ConfirmationScreen.route);
-                  } catch (e) {
-                    if (!context.mounted) return;
-                    final msg = e.toString().contains('Change limit')
-                        ? 'Change limit reached (max 3 per day)'
-                        : 'Failed to submit: $e';
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(msg)));
-                  }
-                },
-          label: Text(limitReached ? 'Change Limit Reached' : 'Confirm Selection'),
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const Text(
+                      'Select Your Meal',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 20),
+                    ToggleButtons(
+                      isSelected: [
+                        selectionProvider.currentChoice == MealChoice.veg,
+                        selectionProvider.currentChoice == MealChoice.nonVeg,
+                      ],
+                      onPressed: (index) {
+                        setState(() {
+                          selectionProvider.selectChoice(
+                              index == 0 ? MealChoice.veg : MealChoice.nonVeg);
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      selectedColor: Colors.black,
+                      fillColor: Theme.of(context).colorScheme.secondary,
+                      color: Colors.white,
+                      children: const [
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 16),
+                            child: Text('Veg')),
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 16),
+                            child: Text('Non-Veg')),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    FutureBuilder<bool>(
+                      future: selectionProvider
+                          .isChangeLimitReachedForSelectedDate(),
+                      builder: (context, snapshot) {
+                        final limitReached = snapshot.data == true;
+                        final isEnabled =
+                            selectionProvider.currentChoice != null &&
+                                selectionProvider.isSubmissionOpen &&
+                                !limitReached;
+                        return ElevatedButton.icon(
+                          icon: const Icon(
+                              Icons.playlist_add_check_circle_outlined),
+                          onPressed: !isEnabled
+                              ? null
+                              : () async {
+                                  try {
+                                    await selectionProvider.submitChoice();
+                                    if (!context.mounted) return;
+                                    Navigator.pop(context); // Close the modal
+                                    _confettiController.play(); // Play confetti
+                                  } catch (e) {
+                                    if (!context.mounted) return;
+                                    final msg =
+                                        e.toString().contains('Change limit')
+                                            ? 'Change limit reached (max 3 per day)'
+                                            : 'Failed to submit: $e';
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text(msg)));
+                                  }
+                                },
+                          label: Text(limitReached
+                              ? 'Change Limit Reached'
+                              : 'Confirm Selection'),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -184,7 +261,7 @@ class SelectionScreen extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'You can change your selection up to 3 times per day.',
+          'You can change your selection up to 3 times per day.\nSubmissions are open from 12:00 PM to 10:00 PM.',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall,
         ),
@@ -211,4 +288,5 @@ class SelectionScreen extends StatelessWidget {
       ],
     );
   }
+
 }

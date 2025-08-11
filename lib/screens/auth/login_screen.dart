@@ -18,6 +18,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final FocusNode _emailFocusNode = FocusNode(); // Add FocusNode for email
+  final FocusNode _passwordFocusNode = FocusNode(); // Add FocusNode for password
   bool _loading = false;
 
   final AuthService _auth = AuthService();
@@ -26,6 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocusNode.dispose(); // Dispose email FocusNode
+    _passwordFocusNode.dispose(); // Dispose password FocusNode
     super.dispose();
   }
 
@@ -87,26 +91,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 40),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.alternate_email),
+                GestureDetector( // Wrap with GestureDetector
+                  onTap: () => FocusScope.of(context).requestFocus(_emailFocusNode), // Request focus on tap
+                  child: TextFormField(
+                    controller: _emailController,
+                    focusNode: _emailFocusNode, // Assign focus node
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.alternate_email),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) =>
+                        v == null || !v.contains('@') ? 'Enter a valid email' : null,
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) =>
-                      v == null || !v.contains('@') ? 'Enter a valid email' : null,
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: Icon(Icons.vpn_key_outlined),
+                GestureDetector( // Wrap with GestureDetector
+                  onTap: () => FocusScope.of(context).requestFocus(_passwordFocusNode), // Request focus on tap
+                  child: TextFormField(
+                    controller: _passwordController,
+                    focusNode: _passwordFocusNode, // Assign focus node
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: Icon(Icons.vpn_key_outlined),
+                    ),
+                    obscureText: true,
+                    validator: (v) =>
+                        v == null || v.length < 6 ? 'Password must be at least 6 characters' : null,
                   ),
-                  obscureText: true,
-                  validator: (v) =>
-                      v == null || v.length < 6 ? 'Password must be at least 6 characters' : null,
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(

@@ -30,8 +30,15 @@ class SelectionProvider extends ChangeNotifier {
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
 
-    // Allow submission only for tomorrow
-    return _selectedDate.isAtSameMomentAs(tomorrow);
+    // Ensure selection is only for tomorrow and within the submission window (1 PM to 10 PM)
+    if (!_selectedDate.isAtSameMomentAs(tomorrow)) {
+      return false;
+    }
+
+    final submissionStartTime = DateTime(now.year, now.month, now.day, 13, 0, 0); // 1 PM
+    final submissionEndTime = DateTime(now.year, now.month, now.day, 22, 0, 0); // 10 PM
+
+    return now.isAfter(submissionStartTime) && now.isBefore(submissionEndTime);
   }
 
   void selectChoice(MealChoice choice) {

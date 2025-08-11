@@ -34,16 +34,19 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  confetti: ^0.7.0
   mobile_scanner: ^7.0.1
   qr_flutter: ^4.1.0
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
   provider: ^6.1.5
+  lottie: ^3.1.0 # Add this line
   firebase_core: ^4.0.0
   cloud_firestore: ^6.0.0
   firebase_auth: ^6.0.0
   google_fonts: ^6.2.1
   flutter_dotenv: ^5.1.0
+  intl: ^0.19.0 # Add this line for date formatting
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +73,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - .env
+    - assets/lottie/ # Add this line for Lottie animations
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
