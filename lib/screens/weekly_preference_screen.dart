@@ -184,65 +184,56 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Select Your Meal Choice',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ToggleButtons(
-                        isSelected: [
-                          selectedChoice == models.MealChoice.veg,
-                          selectedChoice == models.MealChoice.nonVeg,
-                        ],
-                        onPressed: (index) {
-                          setState(() {
-                            selectedChoice = index == 0 ? models.MealChoice.veg : models.MealChoice.nonVeg;
-                          });
-                          if (selectedDate != null) {
-                            selectionProvider.setWeeklyChoice(selectedDate!, selectedChoice);
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(12),
-                        selectedColor: Colors.black,
-                        fillColor: Colors.green,
-                        color: Colors.white,
-                        children: const [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-                            child: Text('Veg'),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-                            child: Text('Non-Veg'),
-                          ),
-                        ],
-                      ),
-                    ],
+                Text(
+                  'Select Your Meal Choice',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 16), // Space between meal and caffeine choices
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Caffeine (optional)',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildCaffeineRow(context, selectionProvider),
-                    ],
-                  ),
+                const SizedBox(height: 8),
+                ToggleButtons(
+                  isSelected: [
+                    selectedChoice == models.MealChoice.veg,
+                    selectedChoice == models.MealChoice.nonVeg,
+                  ],
+                  onPressed: (index) {
+                    setState(() {
+                      selectedChoice = index == 0 ? models.MealChoice.veg : models.MealChoice.nonVeg;
+                    });
+                    if (selectedDate != null) {
+                      selectionProvider.setWeeklyChoice(selectedDate!, selectedChoice);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  selectedColor: Colors.black,
+                  fillColor: Colors.green,
+                  color: Colors.white,
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Text('Veg'),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Text('Non-Veg'),
+                    ),
+                  ],
                 ),
+              ],
+            ),
+            const SizedBox(height: 16), // Space between meal and caffeine choices
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Caffeine (optional)',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                _buildCaffeineRow(context, selectionProvider),
               ],
             ),
           ],
@@ -264,37 +255,114 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
     List<bool> isSelected = caffeineChoices.map((choice) =>
         current == choice).toList();
 
-    return ToggleButtons(
-      isSelected: isSelected,
-      onPressed: (index) {
-        setState(() {
-          models.CaffeineChoice selectedCaffeineChoice = caffeineChoices[index];
-          models.CaffeineChoice? newSelection = (current == selectedCaffeineChoice) ? null : selectedCaffeineChoice;
-          if (selectedDate != null) {
-            selectionProvider.setWeeklyCaffeine(selectedDate!, newSelection);
-          }
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
-      selectedColor: Colors.black,
-      fillColor: Colors.green,
-      color: Colors.white,
-      children: const [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text('Chaya'),
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: ToggleButtons(
+                isSelected: [isSelected[0]],
+                onPressed: (index) {
+                  setState(() {
+                    models.CaffeineChoice selectedCaffeineChoice = caffeineChoices[0];
+                    models.CaffeineChoice? newSelection = (current == selectedCaffeineChoice) ? null : selectedCaffeineChoice;
+                    if (selectedDate != null) {
+                      selectionProvider.setWeeklyCaffeine(selectedDate!, newSelection);
+                    }
+                  });
+                },
+                borderRadius: BorderRadius.circular(12),
+                selectedColor: Colors.black,
+                fillColor: Colors.green,
+                color: Colors.white,
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text('Chaya'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ToggleButtons(
+                isSelected: [isSelected[1]],
+                onPressed: (index) {
+                  setState(() {
+                    models.CaffeineChoice selectedCaffeineChoice = caffeineChoices[1];
+                    models.CaffeineChoice? newSelection = (current == selectedCaffeineChoice) ? null : selectedCaffeineChoice;
+                    if (selectedDate != null) {
+                      selectionProvider.setWeeklyCaffeine(selectedDate!, newSelection);
+                    }
+                  });
+                },
+                borderRadius: BorderRadius.circular(12),
+                selectedColor: Colors.black,
+                fillColor: Colors.green,
+                color: Colors.white,
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text('Kaapi'),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text('Kaapi'),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text('Black Coffee'),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text('Black Tea'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: ToggleButtons(
+                isSelected: [isSelected[2]],
+                onPressed: (index) {
+                  setState(() {
+                    models.CaffeineChoice selectedCaffeineChoice = caffeineChoices[2];
+                    models.CaffeineChoice? newSelection = (current == selectedCaffeineChoice) ? null : selectedCaffeineChoice;
+                    if (selectedDate != null) {
+                      selectionProvider.setWeeklyCaffeine(selectedDate!, newSelection);
+                    }
+                  });
+                },
+                borderRadius: BorderRadius.circular(12),
+                selectedColor: Colors.black,
+                fillColor: Colors.green,
+                color: Colors.white,
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text('Black Coffee'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ToggleButtons(
+                isSelected: [isSelected[3]],
+                onPressed: (index) {
+                  setState(() {
+                    models.CaffeineChoice selectedCaffeineChoice = caffeineChoices[3];
+                    models.CaffeineChoice? newSelection = (current == selectedCaffeineChoice) ? null : selectedCaffeineChoice;
+                    if (selectedDate != null) {
+                      selectionProvider.setWeeklyCaffeine(selectedDate!, newSelection);
+                    }
+                  });
+                },
+                borderRadius: BorderRadius.circular(12),
+                selectedColor: Colors.black,
+                fillColor: Colors.green,
+                color: Colors.white,
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text('Black Tea'),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
