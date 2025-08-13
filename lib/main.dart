@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mess_app/services/firebase_init.dart';
 
 import 'providers/selection_provider.dart';
 import 'screens/selection_screen.dart';
@@ -19,7 +20,7 @@ import 'theme/dark_theme.dart';
 void main() async {
   await Env.load();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await initFirebaseIfEnabled(true); // Assuming Firebase is enabled
   runApp(const MyApp());
 }
 

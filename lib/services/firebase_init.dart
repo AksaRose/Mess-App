@@ -1,13 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mess_app/firebase_options.dart';
 
 Future<void> initFirebaseIfEnabled(bool enabled) async {
   if (!enabled) return;
   try {
-    // Requires generated options after running `flutterfire configure`
-    // ignore: uri_does_not_exist
-    import 'package:mess_app/firebase_options.dart' as fo; // placeholder
-  } catch (_) {}
-  await Firebase.initializeApp();
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (_) {
+    // Firebase is already initialized, or other error.
+  }
 }
 
 
