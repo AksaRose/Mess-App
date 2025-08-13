@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:confetti/confetti.dart'; // Import confetti package
 import 'package:mess_app/screens/weekly_preference_screen.dart';
 import 'package:mess_app/services/models.dart' as models;
+import '../services/menu_service.dart';
+import '../services/firebase_menu_service.dart';
 
 import '../providers/selection_provider.dart';
 import 'confirmation_screen.dart';
@@ -119,42 +121,71 @@ class _SelectionScreenState extends State<SelectionScreen> {
 
   Widget _buildMenuCard(
       BuildContext context, SelectionProvider selectionProvider) {
-    return Card(
-      elevation: 8,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Menu for the Day',
-              style: Theme.of(context).textTheme.titleLarge,
+    final menuService = MenuServiceFactory.create();
+    return FutureBuilder<DailyMenu>(
+      future: (menuService as FirebaseMenuService).getMenuForAsync(selectionProvider.selectedDate),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Card(
+            elevation: 8,
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Center(child: CircularProgressIndicator()),
             ),
-            const Divider(height: 24),
-            if (selectionProvider.selectedMenu.items.isEmpty)
-              const Text('No menu available for this date.')
-            else
-              ...selectionProvider.selectedMenu.items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(item.timeSlot, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Flexible(
-                        child: Text(
-                          'Veg: ${item.veg}\nNon-Veg: ${item.nonVeg}',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(color: Colors.white70),
+          );
+        } else if (snapshot.hasError) {
+          return Card(
+            elevation: 8,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text('Error: ${snapshot.error}'),
+            ),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.items.isEmpty) {
+          return const Card(
+            elevation: 8,
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text('No menu available for this date.'),
+            ),
+          );
+        }
+        final menu = snapshot.data!;
+        return Card(
+          elevation: 8,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Menu for the Day',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const Divider(height: 24),
+                ...menu.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(item.timeSlot, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Flexible(
+                          child: Text(
+                            'Veg: ${item.veg}\nNon-Veg: ${item.nonVeg}',
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(color: Colors.white70),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

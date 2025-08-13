@@ -1,3 +1,4 @@
+import 'package:mess_app/services/firebase_menu_service.dart';
 import 'config.dart';
 
 class MenuItem {
@@ -54,8 +55,7 @@ class LocalMenuService extends MenuService {
 class MenuServiceFactory {
   static MenuService create() {
     if (AppConfig.isFirebaseEnabled) {
-      // For now, return local service until we fix the import
-      return LocalMenuService();
+      return FirebaseMenuService();
     }
     return LocalMenuService();
   }

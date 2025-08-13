@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/menu_service.dart';
+import '../services/firebase_menu_service.dart';
 import '../providers/selection_provider.dart';
 import 'package:mess_app/services/models.dart' as models;
 
@@ -120,50 +121,59 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
   }
 
   Widget _buildMenuDisplay(BuildContext context, DateTime date) {
-    final menu = MenuServiceFactory.create().getMenuFor(date);
-    
-    return Card(
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Menu for ${_getDayName(date.weekday)}',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Divider(height: 24),
-            if (menu.items.isEmpty)
-              const Text(
-                'No menu available for this date.',
-                style: TextStyle(fontStyle: FontStyle.italic),
-              )
-            else
-              ...menu.items.map((item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      item.timeSlot, 
-                      style: const TextStyle(fontWeight: FontWeight.bold)
-                    ),
-                    Flexible(
-                      child: Text(
-                        'Veg: ${item.veg}\nNon-Veg: ${item.nonVeg}',
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ),
-                  ],
+    final menuService = MenuServiceFactory.create();
+    return FutureBuilder<DailyMenu>(
+      future: (menuService as FirebaseMenuService).getMenuForAsync(date),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data!.items.isEmpty) {
+          return const Text(
+            'No menu available for this date.',
+            style: TextStyle(fontStyle: FontStyle.italic),
+          );
+        }
+        final menu = snapshot.data!;
+        return Card(
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Menu for ${_getDayName(date.weekday)}',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              )),
-          ],
-        ),
-      ),
+                const Divider(height: 24),
+                ...menu.items.map((item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        item.timeSlot,
+                        style: const TextStyle(fontWeight: FontWeight.bold)
+                      ),
+                      Flexible(
+                        child: Text(
+                          'Veg: ${item.veg}\nNon-Veg: ${item.nonVeg}',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
