@@ -16,6 +16,7 @@ class SelectionProvider extends ChangeNotifier {
   DateTime? _lastConfirmedAt;
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   final Map<DateTime, MealChoice> _weeklyChoices = {};
+  final Map<DateTime, CaffeineChoice?> _weeklyCaffeine = {};
 
   MealChoice? get currentChoice => _currentChoice;
   DateTime? get lastSubmittedAt => _lastSubmittedAt;
@@ -25,6 +26,7 @@ class SelectionProvider extends ChangeNotifier {
   DailyMenu get todayMenu => _menuService.getMenuFor(DateTime.now());
   DailyMenu get tomorrowMenu => _menuService.getMenuFor(DateTime.now().add(const Duration(days: 1)));
   Map<DateTime, MealChoice> get weeklyChoices => _weeklyChoices;
+  Map<DateTime, CaffeineChoice?> get weeklyCaffeine => _weeklyCaffeine;
 
 
   bool get isSubmissionOpen {
@@ -62,7 +64,8 @@ class SelectionProvider extends ChangeNotifier {
         normalizedDate.isAtSameMomentAs(today) ||
         normalizedDate.isAtSameMomentAs(tomorrow)) {
       _selectedDate = normalizedDate;
-      _loadWeeklyChoices(); // Load weekly choices when selected date changes
+      _loadPlannedChoice(); // Load the specific choice for the newly selected date
+      _loadWeeklyChoices(); // Reload weekly choices for context
       notifyListeners();
     }
   }
@@ -86,6 +89,11 @@ class SelectionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setWeeklyCaffeine(DateTime date, CaffeineChoice? choice) {
+    _weeklyCaffeine[DateTime(date.year, date.month, date.day)] = choice;
+    notifyListeners();
+  }
+
   Future<void> submitSingleWeeklyChoice(DateTime date, {MealChoice? choice}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -100,11 +108,16 @@ class SelectionProvider extends ChangeNotifier {
 
     final payload = WeeklySelectionPayload(weeklyChoices: {
       date: selectedChoice
+    }, weeklyCaffeineChoices: {
+      date: _weeklyCaffeine[date]
     });
     await _backend.submitSingleWeeklyChoice(payload);
-    
+
     // Update the weekly choices map after successful submission
-    _weeklyChoices[DateTime(date.year, date.month, date.day)] = selectedChoice;
+    final normalized = DateTime(date.year, date.month, date.day);
+    _weeklyChoices[normalized] = selectedChoice;
+    // caffeine can be null (meaning no preference)
+    _weeklyCaffeine[normalized] = _weeklyCaffeine[normalized];
     notifyListeners();
   }
 
@@ -139,7 +152,34 @@ class SelectionProvider extends ChangeNotifier {
 
   Future<String> get plannedChoiceLabelForSelectedDate async {
     final choice = await _backend.getChoiceForDate(_selectedDate);
-    return (choice == 'veg') ? 'Veg' : 'Non‑Veg';
+    return (choice == 'veg') ? 'Veg' : (choice == 'non-veg' ? 'Non‑Veg' : 'Not Selected');
+  }
+
+  Future<void> _loadPlannedChoice() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _currentChoice = null;
+      _lastSubmittedAt = null;
+      return;
+    }
+    final submission = await _backend.getSubmissionForDate(user.uid, _selectedDate);
+    if (submission != null) {
+      _currentChoice = submission.choice == 'veg' ? MealChoice.veg : MealChoice.nonVeg;
+      _lastSubmittedAt = DateTime.parse(submission.timestamp);
+    } else {
+      // If no direct submission, check weekly choices for the selected date
+      final weeklySubmissions = await _backend.getWeeklySubmissions(user.uid);
+      final weeklyChoiceStr = weeklySubmissions[_selectedDate];
+      if (weeklyChoiceStr == 'veg') {
+        _currentChoice = MealChoice.veg;
+      } else if (weeklyChoiceStr == 'non-veg') {
+        _currentChoice = MealChoice.nonVeg;
+      } else {
+        _currentChoice = null;
+      }
+      _lastSubmittedAt = null; // No specific submission timestamp for weekly choice
+    }
+    notifyListeners();
   }
 
   Future<bool> isChangeLimitReachedForSelectedDate() async {

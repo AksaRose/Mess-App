@@ -94,6 +94,16 @@ class FirebaseBackend implements Backend {
       final weekday = date.weekday; // 1..7
       updates['weekday_$weekday'] = choice.name; // 'veg' | 'nonVeg'
     });
+    // Optional caffeine
+    payload.weeklyCaffeineChoices?.forEach((date, caffeine) {
+      final weekday = date.weekday;
+      if (caffeine != null) {
+        updates['caffeine_weekday_$weekday'] = caffeine.name; // 'chaya' | 'kaapi' | 'blackCoffee' | 'blackTea'
+      } else {
+        updates['caffeine_weekday_$weekday'] = null;
+      }
+    });
+
     await docRef.set(updates, SetOptions(merge: true));
   }
 
@@ -147,8 +157,16 @@ class FirebaseBackend implements Backend {
     final weekday = dateEntry.key.weekday; // 1..7
     final choice = dateEntry.value.name; // 'veg' | 'nonVeg'
 
+    final Map<String, dynamic> updates = {'weekday_$weekday': choice};
+
+    // Optional caffeine for that day
+    if (payload.weeklyCaffeineChoices != null) {
+      final caffeine = payload.weeklyCaffeineChoices![dateEntry.key];
+      updates['caffeine_weekday_$weekday'] = caffeine?.name;
+    }
+
     final docRef = _db.collection('weeklySelections').doc(userId);
-    await docRef.set({'weekday_$weekday': choice}, SetOptions(merge: true));
+    await docRef.set(updates, SetOptions(merge: true));
   }
 }
 

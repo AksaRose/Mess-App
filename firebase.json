@@ -1,1 +1,43 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"mess-app-c35f7","appId":"1:178582659060:android:1db9256ecf076d10c7e3a1","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"mess-app-c35f7","appId":"1:178582659060:ios:61ecf9912ac61a26c7e3a1","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"mess-app-c35f7","configurations":{"android":"1:178582659060:android:1db9256ecf076d10c7e3a1","ios":"1:178582659060:ios:61ecf9912ac61a26c7e3a1","web":"1:178582659060:web:f09349d335be1b6dc7e3a1"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "mess-app-c35f7",
+          "appId": "1:178582659060:android:1db9256ecf076d10c7e3a1",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "mess-app-c35f7",
+          "appId": "1:178582659060:ios:61ecf9912ac61a26c7e3a1",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "mess-app-c35f7",
+          "configurations": {
+            "android": "1:178582659060:android:1db9256ecf076d10c7e3a1",
+            "ios": "1:178582659060:ios:61ecf9912ac61a26c7e3a1",
+            "web": "1:178582659060:web:f09349d335be1b6dc7e3a1"
+          }
+        }
+      }
+    }
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  }
+}

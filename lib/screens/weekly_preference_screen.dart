@@ -195,7 +195,6 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
                       setState(() {
                         selectedChoice = models.MealChoice.veg;
                       });
-                      // Also update the provider
                       if (selectedDate != null) {
                         selectionProvider.setWeeklyChoice(selectedDate!, models.MealChoice.veg);
                       }
@@ -214,7 +213,6 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
                       setState(() {
                         selectedChoice = models.MealChoice.nonVeg;
                       });
-                      // Also update the provider
                       if (selectedDate != null) {
                         selectionProvider.setWeeklyChoice(selectedDate!, models.MealChoice.nonVeg);
                       }
@@ -223,9 +221,84 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            Text(
+              'Caffeine (optional)',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            _buildCaffeineRow(context, selectionProvider),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCaffeineRow(BuildContext context, SelectionProvider selectionProvider) {
+    final current = selectedDate != null ? selectionProvider.weeklyCaffeine[selectedDate!] : null;
+    models.CaffeineChoice? selected = current;
+
+    Widget caffeineBtn(String label, IconData icon, Color color, models.CaffeineChoice value) {
+      final isSelected = selected == value;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              // toggle/deselect support
+              if (selected == value) {
+                selected = null;
+              } else {
+                selected = value;
+              }
+            });
+            if (selectedDate != null) {
+              selectionProvider.setWeeklyCaffeine(selectedDate!, selected);
+            }
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+            decoration: BoxDecoration(
+              color: isSelected ? color : color.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? color : color.withOpacity(0.25),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18, color: isSelected ? Colors.white : color),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? Colors.white : color,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        caffeineBtn('Chaya', Icons.local_cafe, Colors.brown, models.CaffeineChoice.chaya),
+        const SizedBox(width: 6),
+        caffeineBtn('Kaapi', Icons.coffee, Colors.brown.shade700, models.CaffeineChoice.kaapi),
+        const SizedBox(width: 6),
+        caffeineBtn('Black Coffee', Icons.coffee_outlined, Colors.black87, models.CaffeineChoice.blackCoffee),
+        const SizedBox(width: 6),
+        caffeineBtn('Black Tea', Icons.emoji_food_beverage_outlined, Colors.teal, models.CaffeineChoice.blackTea),
+      ],
     );
   }
 

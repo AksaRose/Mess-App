@@ -4,6 +4,7 @@ import '../../services/admin_service.dart';
 import '../../services/menu_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'menu_editor_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AdminStatsScreen extends StatefulWidget {
   static const String route = '/admin/stats';
@@ -49,61 +50,169 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: FutureBuilder<AdminCounts>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const CircularProgressIndicator();
-            }
-            final counts = snapshot.data!;
-            final weekday = _weekdayNames[_date.weekday - 1];
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Date: ${_date.year}-${_date.month.toString().padLeft(2,'0')}-${_date.day.toString().padLeft(2,'0')} ($weekday) - Submissions from today'),
-                const SizedBox(height: 8),
-                _StatTile(label: 'Veg', value: counts.veg, color: Colors.green),
-                const SizedBox(height: 12),
-                _StatTile(label: 'Non‑Veg', value: counts.nonVeg, color: Colors.orange),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    Navigator.pushNamed(context, MenuEditorScreen.route);
-                  },
-                  label: const Text('Edit Weekly Menu'),
-                ),
-              ],
-            );
-          },
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: FutureBuilder<AdminCounts>(
+              future: _future,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 100),
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Loading admin data...'),
+                    ],
+                  );
+                }
+                
+                if (snapshot.hasError) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 50),
+                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error loading data:',
+                        style: Theme.of(context).textTheme.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          '${snapshot.error}',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _reload,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  );
+                }
+                
+                if (!snapshot.hasData) {
+                  return const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 100),
+                      Icon(Icons.info_outline, size: 48, color: Colors.blue),
+                      SizedBox(height: 16),
+                      Text('No data available'),
+                    ],
+                  );
+                }
+                
+                final counts = snapshot.data!;
+                final weekday = _weekdayNames[_date.weekday - 1];
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        'Date: ${_date.year}-${_date.month.toString().padLeft(2,'0')}-${_date.day.toString().padLeft(2,'0')} ($weekday)',
+                        style: Theme.of(context).textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Submissions from today',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildUserListTile('Vegetarian', counts.veg, counts.vegUsers, Colors.green),
+                    const SizedBox(height: 16),
+                    _buildUserListTile('Non‑Vegetarian', counts.nonVeg, counts.nonVegUsers, Colors.orange),
+                    if (counts.caffeineCounts.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        'Caffeine Choices:',
+                        style: Theme.of(context).textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ...counts.caffeineCounts.entries.map((entry) => 
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: _buildUserListTile(
+                            entry.key, 
+                            entry.value, 
+                            counts.caffeineUsers[entry.key] ?? [], 
+                            Colors.brown
+                          ),
+                        )
+                      ),
+                    ],
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          Navigator.pushNamed(context, MenuEditorScreen.route);
+                        },
+                        label: const Text('Edit Weekly Menu'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
   }
-}
 
-class _StatTile extends StatelessWidget {
-  final String label;
-  final int value;
-  final Color color;
-  const _StatTile({required this.label, required this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildUserListTile(String label, int count, List<AdminUser> users, Color color) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(backgroundColor: color, radius: 8),
-            const SizedBox(width: 12),
-            Text(label, style: const TextStyle(fontSize: 18)),
-            const SizedBox(width: 24),
-            Text('$value', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          ],
+      child: ExpansionTile(
+        leading: CircleAvatar(backgroundColor: color, radius: 6),
+        title: Text(
+          '$label ($count)',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
+        children: users.isEmpty 
+          ? [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'No users selected this option',
+                  style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                ),
+              ),
+            ]
+          : users.map((user) => ListTile(
+              dense: true,
+              leading: const Icon(Icons.person, size: 20),
+              title: Text(
+                user.fullName,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              subtitle: Text(
+                'Admission: ${user.admissionNo} • Pass-out Year: ${user.passOutYear}',
+                style: const TextStyle(fontSize: 12),
+              ),
+            )).toList(),
       ),
     );
   }

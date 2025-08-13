@@ -1,5 +1,7 @@
 enum MealChoice { veg, nonVeg }
 
+enum CaffeineChoice { chaya, kaapi, blackCoffee, blackTea }
+
 class SelectionPayload {
   final String choice; // 'veg' or 'non-veg'
   final DateTime date; // selected day
@@ -14,13 +16,15 @@ class SelectionPayload {
 
 class WeeklySelectionPayload {
   final Map<DateTime, MealChoice> weeklyChoices; // Map of date to meal choice
-  WeeklySelectionPayload({required this.weeklyChoices});
+  final Map<DateTime, CaffeineChoice?>? weeklyCaffeineChoices; // optional caffeine map
+  WeeklySelectionPayload({required this.weeklyChoices, this.weeklyCaffeineChoices});
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> jsonMap = {};
     weeklyChoices.forEach((date, choice) {
       jsonMap[DateTime(date.year, date.month, date.day).toIso8601String()] = choice.name;
     });
+    // Note: caffeine is stored by backend using weekday keys; this JSON is unused there.
     return jsonMap;
   }
 }
