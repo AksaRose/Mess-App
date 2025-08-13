@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/selection_provider.dart';
+import 'package:mess_app/services/models.dart' as models;
 
 class ConfirmationScreen extends StatelessWidget {
   static const String route = '/confirmed';
@@ -22,11 +23,11 @@ class ConfirmationScreen extends StatelessWidget {
             Icon(
               Icons.check_circle,
               size: 96,
-              color: choice == MealChoice.veg ? Colors.green : Colors.orange,
+              color: choice == models.MealChoice.veg ? Colors.green : Colors.orange,
             ),
             const SizedBox(height: 16),
             Text(
-              choice == MealChoice.veg ? 'You are Veg' : 'You are Non‑Veg',
+              choice == models.MealChoice.veg ? 'You are Veg' : 'You are Non‑Veg',
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),

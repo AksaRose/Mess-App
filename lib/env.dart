@@ -13,6 +13,7 @@ class Env {
   static String get webDatabaseUrl => dotenv.env['WEB_DATABASE_URL']!;
   static String get webStorageBucket => dotenv.env['WEB_STORAGE_BUCKET']!;
   static String get webMeasurementId => dotenv.env['WEB_MEASUREMENT_ID']!;
+  static String? get webRecaptchaV3SiteKey => dotenv.env['WEB_RECAPTCHA_V3_SITE_KEY'];
   static String get androidApiKey => dotenv.env['ANDROID_API_KEY']!;
   static String get androidAppId => dotenv.env['ANDROID_APP_ID']!;
   static String get androidMessagingSenderId => dotenv.env['ANDROID_MESSAGING_SENDER_ID']!;

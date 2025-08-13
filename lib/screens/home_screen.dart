@@ -6,6 +6,7 @@ import 'package:intl/intl.dart'; // Import intl for date formatting
 
 import '../providers/selection_provider.dart';
 import 'selection_screen.dart';
+import 'package:mess_app/services/models.dart' show MealChoice;
 
 class HomeScreen extends StatefulWidget {
   static const String route = '/home';
@@ -130,13 +131,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 20),
-                      FutureBuilder<String>(
-                        future: context.read<SelectionProvider>().todayChoiceLabel,
+                      FutureBuilder<MealChoice>(
+                        future: context.read<SelectionProvider>().getEffectiveChoiceForToday(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return const CircularProgressIndicator();
                           }
-                          final label = snapshot.hasData ? labelFromChoice(snapshot.data) : 'Not Selected';
+                          final label = snapshot.hasData
+                              ? (snapshot.data == MealChoice.veg ? 'Veg' : 'Non-Veg')
+                              : 'Not Selected';
                           return Text(
                             label,
                             style: TextStyle(

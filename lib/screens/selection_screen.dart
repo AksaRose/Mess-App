@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:confetti/confetti.dart'; // Import confetti package
+import 'package:mess_app/screens/weekly_preference_screen.dart';
+import 'package:mess_app/services/models.dart' as models;
 
 import '../providers/selection_provider.dart';
 import 'confirmation_screen.dart';
@@ -51,6 +53,8 @@ class _SelectionScreenState extends State<SelectionScreen> {
                 _buildMenuCard(context, selectionProvider),
                 const SizedBox(height: 24),
                 _buildSubmitButton(context, selectionProvider),
+                const SizedBox(height: 16),
+                _buildWeeklyChoiceButton(context),
                 const SizedBox(height: 16),
                 _buildInfoSection(context, selectionProvider),
               ],
@@ -185,13 +189,13 @@ class _SelectionScreenState extends State<SelectionScreen> {
                     const SizedBox(height: 20),
                     ToggleButtons(
                       isSelected: [
-                        selectionProvider.currentChoice == MealChoice.veg,
-                        selectionProvider.currentChoice == MealChoice.nonVeg,
+                        selectionProvider.currentChoice == models.MealChoice.veg,
+                        selectionProvider.currentChoice == models.MealChoice.nonVeg,
                       ],
                       onPressed: (index) {
                         setState(() {
                           selectionProvider.selectChoice(
-                              index == 0 ? MealChoice.veg : MealChoice.nonVeg);
+                              index == 0 ? models.MealChoice.veg : models.MealChoice.nonVeg);
                         });
                       },
                       borderRadius: BorderRadius.circular(12),
@@ -289,4 +293,12 @@ class _SelectionScreenState extends State<SelectionScreen> {
     );
   }
 
+  Widget _buildWeeklyChoiceButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.pushNamed(context, WeeklyPreferenceScreen.route);
+      },
+      child: const Text('Weekly Choices'),
+    );
+  }
 }

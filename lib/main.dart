@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mess_app/services/firebase_init.dart';
 
 import 'providers/selection_provider.dart';
@@ -12,8 +13,7 @@ import 'screens/home_screen.dart';
 import 'screens/admin/login_admin_screen.dart';
 import 'screens/admin/stats_screen.dart';
 import 'screens/admin/menu_editor_screen.dart';
-import 'firebase_options.dart';
-import 'services/config.dart';
+import 'screens/weekly_preference_screen.dart';
 import 'package:mess_app/env.dart';
 import 'theme/dark_theme.dart';
 
@@ -21,6 +21,33 @@ void main() async {
   await Env.load();
   WidgetsFlutterBinding.ensureInitialized();
   await initFirebaseIfEnabled(true); // Assuming Firebase is enabled
+  
+  // Activate Firebase App Check
+  try {
+    if (kIsWeb) {
+      // For web, use reCAPTCHA v3 if available
+      final webRecaptchaKey = Env.webRecaptchaV3SiteKey;
+      if (webRecaptchaKey != null && webRecaptchaKey.isNotEmpty) {
+        await FirebaseAppCheck.instance.activate(
+          webProvider: ReCaptchaV3Provider(webRecaptchaKey),
+        );
+      } else {
+        await FirebaseAppCheck.instance.activate(
+          webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
+        );
+      }
+    } else {
+      // For mobile, use debug providers
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.debug,
+        appleProvider: AppleProvider.debug,
+      );
+    }
+  } catch (e) {
+    // App Check activation failed, continue without it
+    print('Firebase App Check activation failed: $e');
+  }
+  
   runApp(const MyApp());
 }
 
@@ -44,6 +71,7 @@ class MyApp extends StatelessWidget {
           AdminLoginScreen.route: (_) => const AdminLoginScreen(),
           AdminStatsScreen.route: (_) => const AdminStatsScreen(),
           MenuEditorScreen.route: (_) => const MenuEditorScreen(),
+          WeeklyPreferenceScreen.route: (_) => const WeeklyPreferenceScreen(),
         },
         initialRoute: LoginScreen.route,
       ),

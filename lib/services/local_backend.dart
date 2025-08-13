@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import 'models.dart';
 import 'backend.dart';
+import 'package:mess_app/services/models.dart';
 
 // Simple local storage backend for MVP; can be swapped to Firebase later.
 class LocalBackend implements Backend {
@@ -131,4 +132,64 @@ class LocalBackend implements Backend {
     final data = entry as Map<String, dynamic>;
     return (data['changeCount'] as num?)?.toInt() ?? 0;
   }
+  @override
+  Future<void> submitWeeklyChoice(WeeklySelectionPayload payload) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = await _getOrCreateUserId();
+    final data = {
+      'userId': userId,
+      'weeklyChoices': payload.toJson(),
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+    await prefs.setString('weekly_selections_$userId', jsonEncode(data));
+  }
+
+  @override
+  Future<Map<DateTime, String>> getWeeklySubmissions(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('weekly_selections_$userId');
+    if (raw == null) return {};
+    final data = jsonDecode(raw) as Map<String, dynamic>;
+    final weeklyChoices = data['weeklyChoices'] as Map<String, dynamic>;
+    final Map<DateTime, String> result = {};
+    weeklyChoices.forEach((dateString, choice) {
+      result[DateTime.parse(dateString)] = choice as String;
+    });
+    return result;
+  }
+
+  @override
+  Future<Submission?> getSubmissionForDate(String userId, DateTime date) async {
+    // This is a placeholder for LocalBackend, as it doesn't store individual submissions by user and date directly for retrieval.
+    // In a real local backend, you might retrieve from _keySelectionsByDate.
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_keySelectionsByDate);
+    if (raw == null) return null;
+    final Map<String, dynamic> map = jsonDecode(raw);
+    final entry = map[_dateKey(date)];
+    if (entry == null) return null;
+    final data = entry as Map<String, dynamic>;
+    return Submission(
+      choice: data['choice'] as String,
+      timestamp: data['timestamp'] as String,
+      userId: data['userId'] as String,
+      date: DateTime.parse(data['date']),
+    );
+  }
+  @override
+  Future<void> submitSingleWeeklyChoice(WeeklySelectionPayload payload) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = await _getOrCreateUserId();
+    // Assuming payload.weeklyChoices will only contain one entry for the specific day
+    final dateEntry = payload.weeklyChoices.entries.first;
+    final dateKey = _dateKey(dateEntry.key);
+
+    final rawMap = prefs.getString('weekly_selections_$userId');
+    final Map<String, dynamic> weeklySelections = rawMap == null ? {} : jsonDecode(rawMap);
+
+    weeklySelections[dateKey] = dateEntry.value.name;
+
+    await prefs.setString('weekly_selections_$userId', jsonEncode(weeklySelections));
+  }
 }
+
