@@ -1,7 +1,7 @@
 import 'models.dart';
 
 abstract class Backend {
-  Future<void> saveSelection(SelectionPayload payload);
+  Future<void> saveSelection(SelectionPayload payload, {CaffeineChoice? caffeineChoice});
   Future<String?> getChoiceForDate(DateTime date);
   Future<int> getChangeCountForDate(DateTime date);
   Future<void> submitWeeklyChoice(WeeklySelectionPayload payload);

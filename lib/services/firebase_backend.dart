@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:collection/collection.dart';
 
 import 'backend.dart';
 import 'models.dart';
@@ -9,7 +10,7 @@ class FirebaseBackend implements Backend {
   FirebaseBackend({FirebaseFirestore? firestore}) : _db = firestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<void> saveSelection(SelectionPayload payload) async {
+  Future<void> saveSelection(SelectionPayload payload, {CaffeineChoice? caffeineChoice}) async {
     final dateKey = _dateKey(payload.date);
     final userId = fb.FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
@@ -25,10 +26,15 @@ class FirebaseBackend implements Backend {
       final snap = await txn.get(docRef);
       int changeCount = 0;
       String? previousChoice;
+      CaffeineChoice? previousCaffeineChoice;
       if (snap.exists) {
         final data = snap.data() as Map<String, dynamic>;
         changeCount = (data['changeCount'] as num?)?.toInt() ?? 0;
         previousChoice = data['choice'] as String?;
+        final caffeineString = data['caffeine'] as String?;
+        if (caffeineString != null) {
+          previousCaffeineChoice = CaffeineChoice.values.firstWhereOrNull((e) => e.name == caffeineString);
+        }
       }
       final newChoice = payload.choice;
       final isChanging = previousChoice != null && previousChoice != newChoice;
@@ -40,6 +46,7 @@ class FirebaseBackend implements Backend {
         ...payload.toJson(),
         'changeCount': nextCount,
         'updatedAt': DateTime.now().toIso8601String(),
+        if (caffeineChoice != null) 'caffeine': caffeineChoice.name,
       };
       txn.set(docRef, saveData, SetOptions(merge: true));
     });

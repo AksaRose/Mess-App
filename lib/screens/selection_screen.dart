@@ -231,7 +231,7 @@ class _SelectionScreenState extends State<SelectionScreen> {
                       },
                       borderRadius: BorderRadius.circular(12),
                       selectedColor: Colors.black,
-                      fillColor: Theme.of(context).colorScheme.secondary,
+                      fillColor: Colors.green,
                       color: Colors.white,
                       children: const [
                         Padding(
@@ -242,6 +242,67 @@ class _SelectionScreenState extends State<SelectionScreen> {
                             padding: EdgeInsets.symmetric(
                                 horizontal: 32, vertical: 16),
                             child: Text('Non-Veg')),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Caffeine (optional)',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    ToggleButtons(
+                      isSelected: [
+                        selectionProvider.currentCaffeineChoice == models.CaffeineChoice.chaya,
+                        selectionProvider.currentCaffeineChoice == models.CaffeineChoice.kaapi,
+                        selectionProvider.currentCaffeineChoice == models.CaffeineChoice.blackCoffee,
+                        selectionProvider.currentCaffeineChoice == models.CaffeineChoice.blackTea,
+                      ],
+                      onPressed: (index) {
+                        setState(() {
+                          models.CaffeineChoice selectedChoice;
+                          switch (index) {
+                            case 0:
+                              selectedChoice = models.CaffeineChoice.chaya;
+                              break;
+                            case 1:
+                              selectedChoice = models.CaffeineChoice.kaapi;
+                              break;
+                            case 2:
+                              selectedChoice = models.CaffeineChoice.blackCoffee;
+                              break;
+                            case 3:
+                              selectedChoice = models.CaffeineChoice.blackTea;
+                              break;
+                            default:
+                              return;
+                          }
+                          selectionProvider.selectCaffeineChoice(
+                              selectionProvider.currentCaffeineChoice == selectedChoice
+                                  ? null // Deselect if already selected
+                                  : selectedChoice);
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      selectedColor: Colors.black,
+                      fillColor: Colors.green,
+                      color: Colors.white,
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Text('Chaya'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Text('Kaapi'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Text('Black Coffee'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Text('Black Tea'),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 20),

@@ -54,7 +54,6 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
                   
                   // Submit Button
                   _buildSubmitButton(context, selectionProvider),
-                  const SizedBox(height: 20), // Extra space at bottom for safety
                 ],
               ],
             ),
@@ -185,59 +184,67 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Select Your Meal Choice',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: _buildChoiceButton(
-                    context,
-                    'Vegetarian',
-                    Icons.eco,
-                    Colors.green,
-                    selectedChoice == models.MealChoice.veg,
-                    () {
-                      setState(() {
-                        selectedChoice = models.MealChoice.veg;
-                      });
-                      if (selectedDate != null) {
-                        selectionProvider.setWeeklyChoice(selectedDate!, models.MealChoice.veg);
-                      }
-                    },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Select Your Meal Choice',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ToggleButtons(
+                        isSelected: [
+                          selectedChoice == models.MealChoice.veg,
+                          selectedChoice == models.MealChoice.nonVeg,
+                        ],
+                        onPressed: (index) {
+                          setState(() {
+                            selectedChoice = index == 0 ? models.MealChoice.veg : models.MealChoice.nonVeg;
+                          });
+                          if (selectedDate != null) {
+                            selectionProvider.setWeeklyChoice(selectedDate!, selectedChoice);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        selectedColor: Colors.black,
+                        fillColor: Colors.green,
+                        color: Colors.white,
+                        children: const [
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                            child: Text('Veg'),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                            child: Text('Non-Veg'),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 16), // Space between meal and caffeine choices
                 Expanded(
-                  child: _buildChoiceButton(
-                    context,
-                    'Non-Vegetarian',
-                    Icons.restaurant,
-                    Colors.orange,
-                    selectedChoice == models.MealChoice.nonVeg,
-                    () {
-                      setState(() {
-                        selectedChoice = models.MealChoice.nonVeg;
-                      });
-                      if (selectedDate != null) {
-                        selectionProvider.setWeeklyChoice(selectedDate!, models.MealChoice.nonVeg);
-                      }
-                    },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Caffeine (optional)',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildCaffeineRow(context, selectionProvider),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Caffeine (optional)',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            _buildCaffeineRow(context, selectionProvider),
           ],
         ),
       ),
@@ -245,119 +252,51 @@ class _WeeklyPreferenceScreenState extends State<WeeklyPreferenceScreen> {
   }
 
   Widget _buildCaffeineRow(BuildContext context, SelectionProvider selectionProvider) {
+    List<models.CaffeineChoice> caffeineChoices = [
+      models.CaffeineChoice.chaya,
+      models.CaffeineChoice.kaapi,
+      models.CaffeineChoice.blackCoffee,
+      models.CaffeineChoice.blackTea,
+    ];
+
     final current = selectedDate != null ? selectionProvider.weeklyCaffeine[selectedDate!] : null;
-    models.CaffeineChoice? selected = current;
 
-    Widget caffeineBtn(String label, IconData icon, Color color, models.CaffeineChoice value) {
-      final isSelected = selected == value;
-      return Expanded(
-        child: GestureDetector(
-          onTap: () {
-            setState(() {
-              // toggle/deselect support
-              if (selected == value) {
-                selected = null;
-              } else {
-                selected = value;
-              }
-            });
-            if (selectedDate != null) {
-              selectionProvider.setWeeklyCaffeine(selectedDate!, selected);
-            }
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 120),
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-            decoration: BoxDecoration(
-              color: isSelected ? color : color.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isSelected ? color : color.withOpacity(0.25),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 18, color: isSelected ? Colors.white : color),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : color,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
+    List<bool> isSelected = caffeineChoices.map((choice) =>
+        current == choice).toList();
+
+    return ToggleButtons(
+      isSelected: isSelected,
+      onPressed: (index) {
+        setState(() {
+          models.CaffeineChoice selectedCaffeineChoice = caffeineChoices[index];
+          models.CaffeineChoice? newSelection = (current == selectedCaffeineChoice) ? null : selectedCaffeineChoice;
+          if (selectedDate != null) {
+            selectionProvider.setWeeklyCaffeine(selectedDate!, newSelection);
+          }
+        });
+      },
+      borderRadius: BorderRadius.circular(12),
+      selectedColor: Colors.black,
+      fillColor: Colors.green,
+      color: Colors.white,
+      children: const [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text('Chaya'),
         ),
-      );
-    }
-
-    return Row(
-      children: [
-        caffeineBtn('Chaya', Icons.local_cafe, Colors.brown, models.CaffeineChoice.chaya),
-        const SizedBox(width: 6),
-        caffeineBtn('Kaapi', Icons.coffee, Colors.brown.shade700, models.CaffeineChoice.kaapi),
-        const SizedBox(width: 6),
-        caffeineBtn('Black Coffee', Icons.coffee_outlined, Colors.black87, models.CaffeineChoice.blackCoffee),
-        const SizedBox(width: 6),
-        caffeineBtn('Black Tea', Icons.emoji_food_beverage_outlined, Colors.teal, models.CaffeineChoice.blackTea),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text('Kaapi'),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text('Black Coffee'),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text('Black Tea'),
+        ),
       ],
-    );
-  }
-
-  Widget _buildChoiceButton(
-    BuildContext context,
-    String label,
-    IconData icon,
-    Color color,
-    bool isSelected,
-    VoidCallback onTap,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? color : color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? color : color.withOpacity(0.25),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.white : color,
-              size: 24,
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : color,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

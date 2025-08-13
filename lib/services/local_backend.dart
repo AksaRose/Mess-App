@@ -25,7 +25,8 @@ class LocalBackend implements Backend {
   }
 
   @override
-  Future<void> saveSelection(SelectionPayload payload) async {
+  @override
+  Future<void> saveSelection(SelectionPayload payload, {CaffeineChoice? caffeineChoice}) async {
     final prefs = await SharedPreferences.getInstance();
     final userId = await _getOrCreateUserId();
     final data = {'userId': userId, ...payload.toJson()};

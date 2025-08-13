@@ -12,6 +12,7 @@ class SelectionProvider extends ChangeNotifier {
   final MenuService _menuService = MenuServiceFactory.create();
 
   MealChoice? _currentChoice;
+  CaffeineChoice? _currentCaffeineChoice;
   DateTime? _lastSubmittedAt;
   DateTime? _lastConfirmedAt;
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
@@ -19,6 +20,7 @@ class SelectionProvider extends ChangeNotifier {
   final Map<DateTime, CaffeineChoice?> _weeklyCaffeine = {};
 
   MealChoice? get currentChoice => _currentChoice;
+  CaffeineChoice? get currentCaffeineChoice => _currentCaffeineChoice;
   DateTime? get lastSubmittedAt => _lastSubmittedAt;
   DateTime? get lastConfirmedAt => _lastConfirmedAt;
   DateTime get selectedDate => _selectedDate;
@@ -47,6 +49,11 @@ class SelectionProvider extends ChangeNotifier {
 
   void selectChoice(MealChoice choice) {
     _currentChoice = choice;
+    notifyListeners();
+  }
+
+  void selectCaffeineChoice(CaffeineChoice? choice) {
+    _currentCaffeineChoice = choice;
     notifyListeners();
   }
 
@@ -129,6 +136,7 @@ class SelectionProvider extends ChangeNotifier {
           choice: _currentChoice == MealChoice.veg ? 'veg' : 'non-veg',
           date: _selectedDate,
         ),
+        caffeineChoice: _currentCaffeineChoice,
       );
       _lastSubmittedAt = DateTime.now();
       notifyListeners();
